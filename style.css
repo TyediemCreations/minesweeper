@@ -1,3 +1,15 @@
-/*
-http://www.w3schools.com/css/css3_buttons.asp
-*/
+
+.button{
+	padding: 0;
+	height: 20px;
+	width: 20px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 11px;
+	margin: 0px 0px;
+	
+	vertical-align: top;
+	
+	//background: url(image.png);
+}

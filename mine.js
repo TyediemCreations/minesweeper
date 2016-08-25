@@ -220,15 +220,17 @@ var UI = {
 				
 				var cell = document.createElement("BUTTON");
 				cell.id = i.toString() + j.toString();
-				cell.style.height = "20px";
-				cell.style.width = "20px";
+				//cell.style.height = "20px";
+				//cell.style.width = "20px";
+				cell.setAttribute("class","button");
 				cell.setAttribute("onclick","UI.clicked("+i+","+j+","+"true)");
 				//cell.onmousedown = function(event){
 				//	if (event.which == 3){
 				//		console.log("right clicked: " + i.toString() +", "+j.toString());
 				//	}
 				//}
-				cell.setAttribute("onmousedown","UI.rclicked(event,"+i+","+j+")");
+				//cell.setAttribute("onmousedown","UI.rclicked(event,"+i+","+j+")");
+				cell.setAttribute("onContextMenu","UI.rclicked(event,"+i+","+j+")");
 				//set up right click event here
 				document.getElementById("div" + i.toString()).appendChild(cell);
 			}
@@ -307,6 +309,14 @@ var UI = {
 		
 	},
 	rclicked:function(event,row,col){	//called when user right-clicks a button
+		event = event || window.event;
+		if (event.preventDefault){
+			event.preventDefault();
+		}
+		else{
+			event.returnValue = false;
+		}
+	
 		if (event.which != 3) return;
 	
 		if (minesweeper.gameOver) return;
