@@ -1,14 +1,3 @@
-var person = {
-	firstName:"John",
-	lastname:"Doe",
-	age:50,
-	eyeColor:"blue",
-	
-	returnAge : function(){
-		return age;
-	}
-	
-}
 
 var posn = {	//not using right now; delete if that continues to be the case
 	x:0,
@@ -26,7 +15,8 @@ function randRange(range){	//returns random integer between 0 and range-1;
 	
 }
 
-function distance(posi,posf){
+function distance(posi,posf){	//determines distance between position i, and position f		
+								//used for mine placement
 	var xVal = Math.pow((posf.x-posi.x),2);
 	var yVal = Math.pow((posf.y-posi.y),2);
 	
@@ -38,90 +28,128 @@ var minesweeper = {
 	height:16,
 	width:30,
 	mines:99,
+	minesLeft:99,
 	gameOver:false,
+	gameWon:false,
 	
 	setVals:function(height,width,mines){
 		this.height = height;
 		this.width = width;
 		this.mines = mines;
+		this.minesLeft = mines;
 		this.gameOver = false;
+		this.gameWon = false;
 	},
-	createGrid:function(){
+	createGrid:function(){	//creates a default grid with 'height' rows and 'width' columns
 		this.grid = [];
 		
 		for (var i=0;i<this.height;i++){
 			var gridRow = [];
 			for (var j=0;j<this.width;j++){
-				var cell = {mine:false,clicked:false};
+				var cell = {mine:false,clicked:false,flagged:false};
 				gridRow.push(cell);
 			}
 			this.grid.push(gridRow);
 		}
 	},
-	maxDist:function(){
+	resetGrid:function(){	//resets all grid elements to default values
+							//(May not be necessary under current implementation)
+		for (var i=0;i<this.height;i++){
+			for (var j=0;j<this.width;j++){
+				grid[i][j].mine = false;
+				grid[i][j].clicked = false;
+				grid[i][j].flagged = false;
+			}
+		}
+	},
+	maxDist:function(){	//determines the maximum distance allotted by the current grid	
+						//used in mine placement
 		var posi = {x:0,y:0};
 		var posf = {x:(this.width-1),y:(this.height-1)}
 		
 		return distance(posi,posf);
 	},
-	setMines:function(row,col){
-		var TEST = 0;
+	setMines:function(row,col){	//sets the mines, given the user's first input	
+								/*
+								Note: other proposed mine-setting algorithms do not require user's input for 100%
+								of mine placement. If lag is noticeable, switch to such an algorithm
+								*/
+		//var TEST = 0;
 		var counter = this.mines;
-		var posi = {x:col,y:row};
+		var posi = {x:col,y:row};	//user's first input position
 		
 		var maxDist = this.maxDist();
 		
-		while (counter > 0){
+		while (counter > 0){	//while not all mines have been placed
 			var posRow = randRange(this.height);
-			var posCol = randRange(this.width);
+			var posCol = randRange(this.width);	//choose random position on grid
 			
-			if (this.grid[posRow][posCol].mine) continue;
+			if (this.grid[posRow][posCol].mine) continue;	//ignore cell which already contains mine
 			
-			var posf = {x:posCol,y:posRow};
+			var posf = {x:posCol,y:posRow};	//possible position for new mine
 			
 			var distPercent = distance(posi,posf)/maxDist;
 			
 			var chance = Math.random();
-			if (distPercent > chance){
+			if (distPercent > chance){	//0% chance of mine placement acceptance if on user's position		
+										//~100% chance of acceptance if maximum distance away
 				this.grid[posRow][posCol].mine = true;
 				counter--;
 				
-				TEST++;
+				//TEST++;
 			}
 		}
-		console.log(TEST);
+		//console.log(TEST);
 		return;
 	},
-	numAdj:function(row,col){	//returns the number of adjacent cells containing mines
+	numAdj:function(row,col){	//returns the number of cells adjacent to (row,col) containing mines
 		var counter = 0;
 		for (var i=-1;i<=1;i++){
-			if ((row+i) < 0 || (row+i) >= this.height){
+			if ((row+i) < 0 || (row+i) >= this.height)	//ignore invalid row
 				continue;
-			}
 			for (var j=-1;j<=1;j++){
-				if (i===j && i===0) {
+				if (i===j && i===0)	//ignore (row,col); technically unecessary
 					continue;
-				}
-				if ((col+j) < 0 || (col+j) >= this.width){
+				if ((col+j) < 0 || (col+j) >= this.width)	//ignore invalid column
 					continue;
-				}
-				if (this.grid[row+i][col+j].mine){
+				if (this.grid[row+i][col+j].mine)
 					counter++;
-				}
 			}
 		}
 		return counter;
 	},
-	clicked:function(row,col){
+	clicked:function(row,col){	//handles click event for (row,col)
 		this.grid[row][col].clicked = true;
 		
-		if (this.grid[row][col].mine){
+		if (this.grid[row][col].mine){	
 			this.gameOver = true;
 			//any other game-overy things
 			return;
 		}
 	},
-	TESTprintGrid:function(){
+	rclicked:function(row,col){	//handles right-click event for (row,col)
+		if (this.grid[row][col].flagged){
+			this.grid[row][col].flagged = false;
+			this.minesLeft++;
+		}
+		else{
+			this.grid[row][col].flagged = true;
+			this.minesLeft--;
+		}
+	},
+	victoryCheck:function(){
+		for (var i=0;i<this.height;i++){
+			for (var j=0;j<this.width;j++){
+				var cell = this.grid[i][j];
+				if (!cell.mine && !cell.clicked)
+					return false;
+			}
+		}
+		this.gameOver = true;
+		this.gameWon = true;
+		return true;
+	},
+	TESTprintGrid:function(){	//prints grid to console; used for testing purposes
 		//this.setMines(4,20);
 		
 		//console.log("mines adjacent to row-1, col-2: "+this.numAdj(1,2));
@@ -144,42 +172,166 @@ var minesweeper = {
 }
 
 var UI = {
-	height:16,
-	width:30,
-	mines:99,
+	height:-1,
+	width:-1,
+	mines:-1,
 	first:true,
-	//minesweeper:null,
+	startTime:-1,
+	gameOver:false,
 	
-	init:function(height,width,mines){
-		this.height=height;
-		this.width=width;
-		this.mines=mines;
+	init:function(nheight=10,nwidth=10,nmines=10){	//initializes the UI
+		var uheight = document.getElementById("height").value;
+		var uwidth = document.getElementById("width").value;
+		var umines = document.getElementById("mines").value;	//user-defined values. If valid, replace the default values
+		
+		if (!isNaN(uheight) && uheight > 0)	//NOTE: add an upper bound when a practical one is found
+			nheight = uheight;
+		if (!isNaN(uwidth) && uwidth > 0)
+			nwidth = uwidth;
+		if (!isNaN(umines) && umines > 0 && umines < (nheight * nwidth))
+			nmines = umines;
+		else 
+			nmines = Math.min(nmines,(nheight*nwidth)-1);
+		
+		this.mines=nmines;
 		this.first=true;
-		minesweeper.setVals(height,width,mines);
-		minesweeper.createGrid();
+		this.startTime=-1;
+		this.gameOver=false;
+		minesweeper.setVals(nheight,nwidth,nmines);
+		minesweeper.createGrid();	//set the model grid
 		
-		
-		for (var i=0;i<height;i++){
-			for (var j=0;j<width;j++){
+		for (var i=0;i<Math.max(this.height,nheight);i++){	//add/remove buttons as necessary
+			for (var j=0;j<Math.max(this.width,nwidth);j++){
+				if (i >= nheight || j >= nwidth){	//old grid out-reaches new grid; remove element
+					var elem = document.getElementById(i.toString()+j.toString());
+					if (elem != null)
+						elem.parentNode.removeChild(elem);
+					continue;
+				}
+				if (i < this.height && j < this.width){	//reset existing button
+					this.buttonReset(i,j);
+					continue;
+				}
+				else if (i >= this.height){	//new grid out-reaches old grid; add new row
+					var newRow = document.createElement("div");
+					newRow.id = "div" + i.toString();
+					document.getElementById("grid").appendChild(newRow);
+				}
+				
 				var cell = document.createElement("BUTTON");
 				cell.id = i.toString() + j.toString();
-				//cell.setAttribute("value", "Hai");
 				cell.style.height = "20px";
 				cell.style.width = "20px";
-				cell.setAttribute("onclick","UI.clicked("+i+","+j+")");
-				document.getElementById("grid").appendChild(cell);
+				cell.setAttribute("onclick","UI.clicked("+i+","+j+","+"true)");
+				//cell.onmousedown = function(event){
+				//	if (event.which == 3){
+				//		console.log("right clicked: " + i.toString() +", "+j.toString());
+				//	}
+				//}
+				cell.setAttribute("onmousedown","UI.rclicked(event,"+i+","+j+")");
+				//set up right click event here
+				document.getElementById("div" + i.toString()).appendChild(cell);
 			}
-			var br = document.createElement("br");
-			document.getElementById("grid").appendChild(br);
+			if (i >= nheight){	//old grid out-reaches new grid; remove excess spacing
+				var divDel = document.getElementById("div"+i.toString());
+				divDel.parentNode.removeChild(divDel);
+			}
 		}
+		this.height = nheight;
+		this.width = nwidth;
 	},
-	clicked:function(row,col){
+	buttonReset:function(row,col){	//resets button at (row,col) to default
+		var id = row.toString() + col.toString();
+		document.getElementById(id).innerHTML = "";
+		document.getElementById(id).disabled = false; 
+	},
+	//reset:function(newheight,newwidth,newmines){
+		
+	//},
+	formatNumber:function(num){	//returns a string representing the formatted number, num
+								//formatted strings are 3 characters long; if the number is less than 3 characters long, 0's preceed
+		var formatted = "000";
+		if (num <= 0) 
+			return formatted;
+		if (num >= 1000)
+			return "999";
+		
+		formatted = formatted + num.toString();
+		var len = formatted.length;
+		//substring[startIndex, endIndex)
+		//substr[startIndex, numChars]
+		formatted = formatted.substring(len-3,len);
+		
+		return formatted;
+	},
+	update:function(){	//updates the 'timer' and 'mines left' section of the UI
+		//call repeatedly using 'setInterval'
+		//console.log("Here?");
+		if (this.gameOver) return;
+		
+		var timer = document.getElementById("timer");
+		var minesLeft = document.getElementById("minesLeft");
+		//update timer; perhaps save the time of the first click and determine floor(seconds) since then
+			//otherwise infer seconds based on how often the update function is called (downside: must be updated everytime fps is altered)
+		//update minesLeft; for the sake of efficiency, this number should be recorded on minesweeper
+			//otherwise, this number can be easily derived
+			
+		if (minesweeper.gameOver){
+			timer.innerHTML = "YOU";
+			if (minesweeper.gameWon)
+				minesLeft.innerHTML = "WON";
+			else
+				minesLeft.innerHTML = "LOSE";
+			
+			for (var i=0;i<this.height;i++){
+				for (var j=0;j<this.width;j++){
+					if (minesweeper.grid[i][j].mine){
+						var cell = document.getElementById(i.toString()+j.toString());
+						cell.innerHTML = "M";
+					}
+				}
+			}
+			return;
+		}	
+		
+		if (!this.first){
+			var time = Date.parse(new Date()) - this.startTime;
+			var seconds = Math.floor((time/1000)%60);
+		
+			timer.innerHTML = UI.formatNumber(seconds);
+		}
+		else
+			timer.innerHTML = "000";
+		
+		minesLeft.innerHTML = UI.formatNumber(minesweeper.minesLeft);
+		
+	},
+	rclicked:function(event,row,col){	//called when user right-clicks a button
+		if (event.which != 3) return;
+	
+		if (minesweeper.gameOver) return;
+		if (minesweeper.grid[row][col].clicked) return;
+		
+		if (minesweeper.grid[row][col].flagged){
+			document.getElementById(row.toString()+col.toString()).innerHTML = "";
+		}
+		else {
+			document.getElementById(row.toString()+col.toString()).innerHTML = "F";
+		}
+		minesweeper.rclicked(row,col);
+	},
+	clicked:function(row,col,topLevel=false){	//called when user left-clicks a button
+		if (minesweeper.gameOver) return;
+		
 		if (this.first){
 			minesweeper.setMines(row,col);
 			this.first = false;
+			this.startTime = Date.parse(new Date());
 			
 			minesweeper.TESTprintGrid();
 		}
+		if (minesweeper.grid[row][col].flagged) return;
+		
 		minesweeper.clicked(row,col);
 		if (minesweeper.grid[row][col].mine) return;
 		//check for minesweeper.gameOver
@@ -209,24 +361,50 @@ var UI = {
 			document.getElementById(row.toString()+col.toString()).innerHTML = adj.toString();
 			//set button text to adj
 		}
+		
+		if (topLevel)
+			minesweeper.victoryCheck();
 	}
 }
 
-function clicked(row,column){
+function clicked(row,column){	//just a test; ignore it.
 	console.log("CLICKED! row:"+row+", column:"+column);
 }
 
-function createGrid(height=16,width=30,mines=99){
+function createGrid(height=16,width=30,mines=99){	//called at program's start to initiate all elements
+	
+	var timer = document.createElement("text");
+	timer.id = "timer";
+	timer.innerHTML = "000";
+	
+	var resetButton = document.createElement("BUTTON");
+	resetButton.id = "reset";
+	resetButton.setAttribute("onclick","UI.init()");
+	resetButton.innerHTML = "RESET";
+	
+	var minesLeft = document.createElement("text");
+	minesLeft.id = "minesLeft";
+	minesLeft.innerHTML = "000";
+	
+	document.getElementById("view").appendChild(timer);
+	document.getElementById("view").appendChild(resetButton);
+	document.getElementById("view").appendChild(minesLeft);
 	
 	UI.init(height,width,mines);
-	
-	//mineSweeper.setVals(height,width,99);
-	//mineSweeper.createGrid();
-	//mineSweeper.TESTprintGrid();
+	window.setInterval(function(){UI.update();},100);
+	//window.setInterval(function(){console.log("Hello?");}, 1000);
 	
 	return;
 }
 
+
 createGrid(10,10,10);
 
-//to work on: UI.clicked
+
+/*
+to do: 
+	-on a 30x16 grid, there's some funny agoins on w.r.t. clicked (ui grid seems inconsistent with model grid)
+	-implement timer + mines left
+	
+	-UI.init() - move add new row outside of inner for loop
+*/
