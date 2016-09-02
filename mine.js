@@ -201,9 +201,14 @@ var UI = {
 		minesweeper.createGrid();	//set the model grid
 		
 		for (var i=0;i<Math.max(this.height,nheight);i++){	//add/remove buttons as necessary
+			if (i >= this.height){	//new grid out-reaches old grid; add new row
+				var newRow = document.createElement("div");
+				newRow.id = "div" + i.toString();
+				document.getElementById("grid").appendChild(newRow);
+			}
 			for (var j=0;j<Math.max(this.width,nwidth);j++){
 				if (i >= nheight || j >= nwidth){	//old grid out-reaches new grid; remove element
-					var elem = document.getElementById(i.toString()+j.toString());
+					var elem = document.getElementById(i.toString()+"_"+j.toString());
 					if (elem != null)
 						elem.parentNode.removeChild(elem);
 					continue;
@@ -212,17 +217,12 @@ var UI = {
 					this.buttonReset(i,j);
 					continue;
 				}
-				else if (i >= this.height){	//new grid out-reaches old grid; add new row
-					var newRow = document.createElement("div");
-					newRow.id = "div" + i.toString();
-					document.getElementById("grid").appendChild(newRow);
-				}
 				
 				var cell = document.createElement("BUTTON");
-				cell.id = i.toString() + j.toString();
+				cell.id = i.toString() +"_"+ j.toString();
 				//cell.style.height = "20px";
 				//cell.style.width = "20px";
-				cell.setAttribute("class","button");
+				cell.setAttribute("class","");
 				cell.setAttribute("onclick","UI.clicked("+i+","+j+","+"true)");
 				//cell.onmousedown = function(event){
 				//	if (event.which == 3){
@@ -234,22 +234,26 @@ var UI = {
 				//set up right click event here
 				document.getElementById("div" + i.toString()).appendChild(cell);
 			}
+			var div = document.getElementById("div"+i.toString());
 			if (i >= nheight){	//old grid out-reaches new grid; remove excess spacing
-				var divDel = document.getElementById("div"+i.toString());
-				divDel.parentNode.removeChild(divDel);
+				div.parentNode.removeChild(div);
+			}
+			else{	//set div min-width to prevent resizing
+				var cellWidth = 20;
+				var fullWidth = (nwidth*20).toString() + "px";
+				div.style.minWidth = fullWidth;
 			}
 		}
 		this.height = nheight;
 		this.width = nwidth;
 	},
 	buttonReset:function(row,col){	//resets button at (row,col) to default
-		var id = row.toString() + col.toString();
-		document.getElementById(id).innerHTML = "";
-		document.getElementById(id).disabled = false; 
+		var id = row.toString()+"_"+col.toString();
+		var cell = document.getElementById(id);
+		cell.innerHTML = "";
+		cell.disabled = false; 
+		cell.setAttribute("class","");
 	},
-	//reset:function(newheight,newwidth,newmines){
-		
-	//},
 	formatNumber:function(num){	//returns a string representing the formatted number, num
 								//formatted strings are 3 characters long; if the number is less than 3 characters long, 0's preceed
 		var formatted = "000";
@@ -288,8 +292,9 @@ var UI = {
 			for (var i=0;i<this.height;i++){
 				for (var j=0;j<this.width;j++){
 					if (minesweeper.grid[i][j].mine){
-						var cell = document.getElementById(i.toString()+j.toString());
-						cell.innerHTML = "M";
+						var cell = document.getElementById(i.toString()+"_"+j.toString());
+						cell.setAttribute("class","mine");
+						//cell.innerHTML = "M";
 					}
 				}
 			}
@@ -298,7 +303,7 @@ var UI = {
 		
 		if (!this.first){
 			var time = Date.parse(new Date()) - this.startTime;
-			var seconds = Math.floor((time/1000)%60);
+			var seconds = Math.floor((time/1000));
 		
 			timer.innerHTML = UI.formatNumber(seconds);
 		}
@@ -322,11 +327,15 @@ var UI = {
 		if (minesweeper.gameOver) return;
 		if (minesweeper.grid[row][col].clicked) return;
 		
+		var cell = document.getElementById(row.toString()+"_"+col.toString());
 		if (minesweeper.grid[row][col].flagged){
-			document.getElementById(row.toString()+col.toString()).innerHTML = "";
+			cell.setAttribute("class","");
+			cell.innerHTML = "";
 		}
 		else {
-			document.getElementById(row.toString()+col.toString()).innerHTML = "F";
+			//cell.class = "flagged";
+			cell.setAttribute("class","flagged");
+			//cell.innerHTML = "F";
 		}
 		minesweeper.rclicked(row,col);
 	},
@@ -343,10 +352,12 @@ var UI = {
 		if (minesweeper.grid[row][col].flagged) return;
 		
 		minesweeper.clicked(row,col);
-		if (minesweeper.grid[row][col].mine) return;
 		//check for minesweeper.gameOver
 		//set button to grey
-		document.getElementById(row.toString() + col.toString()).disabled = true;
+		var cell = document.getElementById(row.toString()+"_"+col.toString());
+		cell.disabled = true;
+		if (minesweeper.grid[row][col].mine) return;
+		
 		var adj = minesweeper.numAdj(row,col);
 		if (adj === 0){
 			for (var i=-1;i<=1;i++){
@@ -367,8 +378,9 @@ var UI = {
 			}
 		}
 		else{
-			//document.getElementById(row.toString()+col.toString()).setAttribute("value",adj.toString());
-			document.getElementById(row.toString()+col.toString()).innerHTML = adj.toString();
+			//document.getElementById(row.toString()+"_"+col.toString()).setAttribute("value",adj.toString());
+			cell.setAttribute("class","_"+adj.toString());
+			cell.innerHTML = adj.toString();
 			//set button text to adj
 		}
 		
@@ -413,8 +425,6 @@ createGrid(10,10,10);
 
 /*
 to do: 
-	-on a 30x16 grid, there's some funny agoins on w.r.t. clicked (ui grid seems inconsistent with model grid)
-	-implement timer + mines left
 	
 	-UI.init() - move add new row outside of inner for loop
 */

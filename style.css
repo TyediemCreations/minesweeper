@@ -1,5 +1,9 @@
 
-.button{
+//#grid div{
+//	min-width: 960px;
+//}
+#grid button{
+	color: black;
 	padding: 0;
 	height: 20px;
 	width: 20px;
@@ -7,9 +11,32 @@
 	text-decoration: none;
 	display: inline-block;
 	font-size: 11px;
+	font-weight: bold;
+	font-family: "Arial";
 	margin: 0px 0px;
+	border:2px solid;
+	border-top-color: white;
+	border-left-color: white;
+	border-bottom-color:gray;
+	border-right-color: gray;
 	
 	vertical-align: top;
-	
+	background-image: default;
+	background-color: #E0E0E0;
 	//background: url(image.png);
 }
+#grid button:disabled{
+	//background-color: gray;
+	border:1px solid #c1c0c0;
+	
+}
+#grid .flagged{background-image: url(images/flagT.png);}
+#grid .mine{background-image: url(images/mineT.png);}
+#grid ._1{color: blue;}
+#grid ._2{color: green;}
+#grid ._3{color: red;}
+#grid ._4{color: navy;}
+#grid ._5{color: maroon;}
+#grid ._6{color: teal;}
+#grid ._7{color: black;}
+#grid ._8{color: gray;}
