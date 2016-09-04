@@ -1,7 +1,24 @@
 
-//#grid div{
-//	min-width: 960px;
-//}
+#full{
+	border: 3px solid;
+	display: inline-block;
+	
+	border-top-color: #F0F0F0;
+	border-left-color: #F0F0F0;
+	border-bottom-color:gray;
+	border-right-color: gray;
+}
+#inner{
+	border: 10px solid #E0E0E0;
+	display: inline-block;
+	//border-color: #E0E0E0;
+}
+#view{
+	border-bottom: 10px solid #E0E0E0;
+	text-align: center;
+}
+
+
 #grid button{
 	color: black;
 	padding: 0;
@@ -15,6 +32,7 @@
 	font-family: "Arial";
 	margin: 0px 0px;
 	border:2px solid;
+	
 	border-top-color: white;
 	border-left-color: white;
 	border-bottom-color:gray;
@@ -23,15 +41,13 @@
 	vertical-align: top;
 	background-image: default;
 	background-color: #E0E0E0;
-	//background: url(image.png);
 }
-#grid button:disabled{
-	//background-color: gray;
-	border:1px solid #c1c0c0;
-	
-}
+#grid button:disabled{border:1px solid #c1c0c0;}
+
 #grid .flagged{background-image: url(images/flagT.png);}
+#grid .flagged.victory{background-color: #8CFE7D;}
 #grid .mine{background-image: url(images/mineT.png);}
+#grid .mine.failed{background-color: #FE7D7F;}
 #grid ._1{color: blue;}
 #grid ._2{color: green;}
 #grid ._3{color: red;}

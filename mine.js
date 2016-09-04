@@ -240,12 +240,14 @@ var UI = {
 			}
 			else{	//set div min-width to prevent resizing
 				var cellWidth = 20;
-				var fullWidth = (nwidth*20).toString() + "px";
+				var fullWidth = (nwidth*cellWidth).toString() + "px";
 				div.style.minWidth = fullWidth;
 			}
 		}
 		this.height = nheight;
 		this.width = nwidth;
+		
+		//document.getElementById("grid").style.border-width = (nwidth*20).toString() + "px";
 	},
 	buttonReset:function(row,col){	//resets button at (row,col) to default
 		var id = row.toString()+"_"+col.toString();
@@ -283,21 +285,29 @@ var UI = {
 			//otherwise, this number can be easily derived
 			
 		if (minesweeper.gameOver){
-			timer.innerHTML = "YOU";
-			if (minesweeper.gameWon)
-				minesLeft.innerHTML = "WON";
-			else
-				minesLeft.innerHTML = "LOSE";
+			//timer.innerHTML = "YOU";
+			var setClass;
+			if (minesweeper.gameWon){
+				setClass = "flagged victory";
+				minesLeft.innerHTML = "000";
+				//minesLeft.innerHTML = "WON";
+			}
+			else{
+				setClass = "mine";
+				//minesLeft.innerHTML = "LOSE";
+			}
 			
 			for (var i=0;i<this.height;i++){
 				for (var j=0;j<this.width;j++){
 					if (minesweeper.grid[i][j].mine){
 						var cell = document.getElementById(i.toString()+"_"+j.toString());
-						cell.setAttribute("class","mine");
+						if (cell.className != "mine failed")
+							cell.setAttribute("class",setClass);
 						//cell.innerHTML = "M";
 					}
 				}
 			}
+			
 			return;
 		}	
 		
@@ -341,6 +351,7 @@ var UI = {
 	},
 	clicked:function(row,col,topLevel=false){	//called when user left-clicks a button
 		if (minesweeper.gameOver) return;
+		if (minesweeper.grid[row][col].flagged) return;
 		
 		if (this.first){
 			minesweeper.setMines(row,col);
@@ -349,14 +360,16 @@ var UI = {
 			
 			minesweeper.TESTprintGrid();
 		}
-		if (minesweeper.grid[row][col].flagged) return;
 		
 		minesweeper.clicked(row,col);
 		//check for minesweeper.gameOver
 		//set button to grey
 		var cell = document.getElementById(row.toString()+"_"+col.toString());
 		cell.disabled = true;
-		if (minesweeper.grid[row][col].mine) return;
+		if (minesweeper.grid[row][col].mine){
+			cell.setAttribute("class", "mine failed");
+			return;
+		}
 		
 		var adj = minesweeper.numAdj(row,col);
 		if (adj === 0){
@@ -398,15 +411,18 @@ function createGrid(height=16,width=30,mines=99){	//called at program's start to
 	var timer = document.createElement("text");
 	timer.id = "timer";
 	timer.innerHTML = "000";
+	timer.style.float = "left";
 	
 	var resetButton = document.createElement("BUTTON");
 	resetButton.id = "reset";
 	resetButton.setAttribute("onclick","UI.init()");
 	resetButton.innerHTML = "RESET";
+	//resetButton.style.float = "center";
 	
 	var minesLeft = document.createElement("text");
 	minesLeft.id = "minesLeft";
 	minesLeft.innerHTML = "000";
+	minesLeft.style.float = "right";
 	
 	document.getElementById("view").appendChild(timer);
 	document.getElementById("view").appendChild(resetButton);
@@ -422,9 +438,3 @@ function createGrid(height=16,width=30,mines=99){	//called at program's start to
 
 createGrid(10,10,10);
 
-
-/*
-to do: 
-	
-	-UI.init() - move add new row outside of inner for loop
-*/
