@@ -1,6 +1,6 @@
 
 function randRange(range){	//returns random integer between 0 and range-1;
-							//used primarily to randomly select from an array
+							//used primarily to randomly select index from an array
 	return Math.floor(Math.random() * range);						
 	
 }
@@ -15,10 +15,10 @@ function distance(posi,posf){	//determines distance between position i, and posi
 
 var minesweeper = {	//a model of the game board
 	grid:[],
-	height:16,
-	width:30,
-	mines:99,
-	minesLeft:99,
+	height:-1,
+	width:-1,
+	mines:-1,
+	minesLeft:-1,
 	gameOver:false,
 	gameWon:false,
 	
@@ -248,16 +248,13 @@ var UI = {	//The view; interracts with the model
 		var minesLeft = document.getElementById("minesLeft");
 		
 		if (minesweeper.gameOver){
-			//timer.innerHTML = "YOU";
 			var setClass;
 			if (minesweeper.gameWon){
 				setClass = "flagged victory";
 				minesLeft.innerHTML = "000";
-				//minesLeft.innerHTML = "WON";
 			}
 			else{
 				setClass = "mine";
-				//minesLeft.innerHTML = "LOSE";
 			}
 			
 			for (var i=0;i<this.height;i++){	//user has won/lost; mine locations are displayed
@@ -266,7 +263,6 @@ var UI = {	//The view; interracts with the model
 						var cell = document.getElementById(i.toString()+"_"+j.toString());
 						if (cell.className != "mine failed")
 							cell.setAttribute("class",setClass);
-						//cell.innerHTML = "M";
 					}
 				}
 			}
@@ -294,7 +290,7 @@ var UI = {	//The view; interracts with the model
 		}
 		else{
 			event.returnValue = false;
-		}	//remove context window from buttons to prevent imediment to gameplay
+		}	//remove context window from buttons to prevent impediment to gameplay
 	
 		if (event.which != 3) return;	//return if not actually a right-click
 	
@@ -304,11 +300,9 @@ var UI = {	//The view; interracts with the model
 		var cell = document.getElementById(row.toString()+"_"+col.toString());
 		if (minesweeper.grid[row][col].flagged){
 			cell.setAttribute("class","");
-			//cell.innerHTML = "";
 		}
 		else {
 			cell.setAttribute("class","flagged");
-			//cell.innerHTML = "F";
 		}
 		minesweeper.rclicked(row,col);
 	},
@@ -338,14 +332,14 @@ var UI = {	//The view; interracts with the model
 		var adj = minesweeper.numAdj(row,col);
 		if (adj === 0){	//if (row,col) has no mines adjacent to it, 'clicked' is called recursively on all adjacent buttons
 			for (var i=-1;i<=1;i++){
-				if ((row+i) < 0 || (row+i) >= this.height){
+				if ((row+i) < 0 || (row+i) >= this.height){	//ignore out-of-bounds row
 					continue;
 				}
 				for (var j=-1;j<=1;j++){
-					if (i===j && i===0) {
+					if (i===j && i===0) {	//ignore (row,col)
 						continue;
 					}
-					if ((col+j) < 0 || (col+j) >= this.width){
+					if ((col+j) < 0 || (col+j) >= this.width){	//ignore out-of-bounds column
 						continue;
 					}
 					if (!minesweeper.grid[row+i][col+j].clicked){
